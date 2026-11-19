@@ -1,13 +1,19 @@
-# bt-flapper
+<p align="center">
+  <img src="Resources/AppIcon.png" width="128" height="128" alt="bt-flapper logo">
+</p>
 
-A lightweight macOS menu bar utility that prevents your MacBook from hogging Bluetooth devices (like headphones) while the lid is closed.
+<h1 align="center">bt-flapper</h1>
+
+<p align="center">
+  A lightweight macOS menu bar utility that prevents your MacBook from hogging Bluetooth devices (like headphones) while the lid is closed.
+</p>
 
 ## What it does
 
 - **Lid closed:** remembers all currently connected Bluetooth devices and disconnects them (coordinating briefly with macOS sleep so disconnects complete before suspend).
 - **Dark wake while closed:** does **not** reconnect while the lid is closed, and disconnects if macOS grabs a device again during a background wake.
 - **Lid opened:** makes a single, non-forceful attempt to reconnect each remembered device (the same as clicking it once in the macOS Bluetooth menu).
-- **Menu bar controls:** lives quietly in the top menu bar with a simple **Enabled** toggle and **Quit** — no Dock icon, no extra bloat.
+- **Menu bar controls:** lives quietly in the top menu bar with a simple **Enabled** toggle, **Launch at Login** toggle, and **Quit** — no Dock icon, no extra bloat.
 
 ## Requirements
 
@@ -46,6 +52,9 @@ On first launch, `bt-flapper` will:
 # Run unit tests
 make test
 
+# Regenerate AppIcon.png and AppIcon.icns
+make icon
+
 # Clean build artifacts
 make clean
 ```
@@ -56,7 +65,11 @@ Written in native Swift with zero third-party dependencies:
 
 - **IOKit (`IOPMrootDomain`)** observes `AppleClamshellState` for lid close/open events and hooks `IORegisterForSystemPower` to ensure Bluetooth disconnects finish before sleep.
 - **IOBluetooth** reads connected paired devices (`IOBluetoothDevice.pairedDevices()`), disconnects via `closeConnection()`, and attempts a single reconnect via `openConnection()`.
-- **AppKit** provides the menu bar icon (`NSStatusItem`) with `LSUIElement = true`.
+- **AppKit** provides the custom menu bar icon (`NSStatusItem`) with `LSUIElement = true`.
+
+## AI Disclosure
+
+This project — including the Swift source code, icon generator, unit tests, documentation, and release workflow — was built with the assistance of **Antigravity**, an AI coding assistant by Google DeepMind, guided and tested by the repository author.
 
 ## License
 

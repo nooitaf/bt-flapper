@@ -84,20 +84,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         guard let button = statusItem?.button else { return }
 
-        let symbolName = enabled
-            ? "antenna.radiowaves.left.and.right"
-            : "antenna.radiowaves.left.and.right.slash"
-        let description = enabled ? "bt-flapper enabled" : "bt-flapper disabled"
-
-        if let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: description) {
-            image.isTemplate = true
-            button.image = image
-            button.title = ""
-        } else {
-            button.image = nil
-            button.title = enabled ? "BT" : "BT×"
-        }
-
+        button.image = MenuBarIcon.image(enabled: enabled)
+        button.title = ""
         button.toolTip = enabled ? "bt-flapper: Enabled" : "bt-flapper: Disabled"
     }
 
