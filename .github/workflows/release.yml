@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run tests
+        run: make test
+
+      - name: Build universal app bundle
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="${TAG#v}"
+          swift build -c release --arch arm64 --arch x86_64
+
+          APP_BUNDLE="build/bt-flapper.app"
+          rm -rf "$APP_BUNDLE"
+          mkdir -p "$APP_BUNDLE/Contents/MacOS" "$APP_BUNDLE/Contents/Resources"
+
+          cp ".build/apple/Products/Release/bt-flapper" "$APP_BUNDLE/Contents/MacOS/bt-flapper"
+          cp Resources/Info.plist "$APP_BUNDLE/Contents/Info.plist"
+          cp Resources/AppIcon.icns "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
+
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" "$APP_BUNDLE/Contents/Info.plist"
+          codesign --force --deep --sign - "$APP_BUNDLE"
+
+          ARCHIVE="bt-flapper-${TAG}-macos-universal.zip"
+          ditto -c -k --keepParent "$APP_BUNDLE" "$ARCHIVE"
+          shasum -a 256 "$ARCHIVE" > "${ARCHIVE}.sha256"
+
+          echo "ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" \
+            "$ARCHIVE" \
+            "${ARCHIVE}.sha256" \
+            --title "bt-flapper $TAG" \
+            --generate-notes
